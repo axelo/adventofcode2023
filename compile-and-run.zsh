@@ -1,12 +1,13 @@
 #!/bin/zsh
 
 set -euo pipefail
-set -x
 
 DAY="$1"
 INPUT="$2"
 
 mkdir -p build
+
+set -x
 
 clang \
     -fsanitize=undefined,integer,nullability \
