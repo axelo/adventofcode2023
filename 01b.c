@@ -4,6 +4,7 @@
 #include <string.h>
 
 #define NSPELLED_DIGITS 10
+
 static const char *spelled_digits[NSPELLED_DIGITS] = {
     "zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"
 };
