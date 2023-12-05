@@ -6,8 +6,8 @@
 #include <string.h> // memset
 
 #define NLINES 4
+#define NMASK  (NLINES - 1)
 #define NCHARS 150
-#define NRATIOS 400
 
 static int64_t parse_number(int i, const char *s) {
     if (!isdigit(s[i])) return -1;
@@ -21,8 +21,8 @@ static int64_t parse_number(int i, const char *s) {
     return num;
 }
 
-static int parse_gear_ratios(const char* above, const char* current, const char* below, int iratios, int64_t out_ratios[NRATIOS]) {
-    int n = 0;
+static int64_t parse_gear_ratios(const char above[NCHARS], const char current[NCHARS], const char below[NCHARS]) {
+    int64_t sum = 0;
     int64_t numbers[8];
 
     for (int i = 1; i < NCHARS; ++i) {
@@ -37,7 +37,7 @@ static int parse_gear_ratios(const char* above, const char* current, const char*
             numbers[7] = !isdigit(below[i])     ? parse_number(i + 1, below) : -1;
 
             int nnums = 0;
-            int ratio = 1;
+            int64_t ratio = 1;
 
             for (int j = 0; j < 8; ++j) {
                 if (numbers[j] >= 0) {
@@ -46,70 +46,54 @@ static int parse_gear_ratios(const char* above, const char* current, const char*
                 }
             }
 
-            if (nnums == 2) {
-                assert(iratios + n < NRATIOS);
-                out_ratios[iratios + n++] = ratio;
-            }
+            if (nnums == 2) sum += ratio;
         }
     }
 
-    return n;
+    return sum;
 }
 
 int main(void) {
     char *line = NULL;
     size_t ngetline = 0;
-    int nchars = 0;
+
+    int64_t sum = 0;
 
     char schematic[NLINES][NCHARS] = {0};
 
     int ir = NLINES - 1; // start reading into the last line index, so we read in "nothing" until we got some real data
     int jr = 0;          // above, current, below lines
-
-    int64_t ratios[NRATIOS];
-    int nratios = 0;
+    int nchars = 0;
 
     while ((nchars = (int)getline(&line, &ngetline, stdin)) > 0) {
-        if (line[nchars - 1] == '\n') line[--nchars] = '\0';
+        if (line[nchars - 1] == '\n') line[--nchars] = 0;
         assert((nchars + 1) < (NCHARS - 1));
 
-        memcpy(&schematic[ir][1], line, nchars); // start at 1 to skip the need for boundary checks
+        memcpy(&schematic[ir++ & NMASK][1], line, nchars); // start at 1 to skip the need for boundary checks
 
-        ir = (ir + 1) & 3;
-
-        nratios += parse_gear_ratios(
-            schematic[jr],
-            schematic[(jr + 1) & 3],
-            schematic[(jr + 2) & 3],
-            nratios,
-            ratios
+        sum += parse_gear_ratios(
+            schematic[jr       & NMASK],
+            schematic[(jr + 1) & NMASK],
+            schematic[(jr + 2) & NMASK]
         );
 
-        jr = (jr + 1) & 3;
+        ++jr;
     }
 
     // simulate reading NLINES empty lines to catch 'em all
     for (int k = 0; k < NLINES; k++) {
-        memset(schematic[ir], 0, NCHARS);
+        memset(schematic[ir++ & NMASK], 0, NCHARS);
 
-        ir = (ir + 1) & 3;
-
-        nratios += parse_gear_ratios(
-            schematic[jr],
-            schematic[(jr + 1) & 3],
-            schematic[(jr + 2) & 3],
-            nratios,
-            ratios
+        sum += parse_gear_ratios(
+            schematic[jr       & NMASK],
+            schematic[(jr + 1) & NMASK],
+            schematic[(jr + 2) & NMASK]
         );
 
-        jr = (jr + 1) & 3;
+        ++jr;
     }
 
     free(line);
-
-    int64_t sum = 0;
-
-    for (int i = 0; i < nratios; ++i) sum += ratios[i];
 
     printf("%lld\n", sum);
 
