@@ -11,14 +11,14 @@ else
 fi
 
 FLAGS="-Ofast \
-    -Wunused-but-set-variable \
     -Wunused-parameter \
     -Wunused-macros"
 
 if [[ -v D ]]; then
     FLAGS="-O0 \
         -Wno-unused-function \
-        -Wno-unused-variable"
+        -Wno-unused-variable \
+        -Wno-unused-but-set-variable"
 fi
 
 mkdir -p build
