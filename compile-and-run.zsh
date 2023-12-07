@@ -41,4 +41,4 @@ clang \
     -o "./build/$DAY" \
     "$DAY.c"
 
-"./build/$DAY" < "$INPUT"
+UBSAN_OPTIONS="halt_on_error=1 report_error_type=1 print_stacktrace=1" "./build/$DAY" < "$INPUT"

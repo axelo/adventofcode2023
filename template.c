@@ -4,9 +4,9 @@
 
 int main(void) {
     char *line = NULL;
-    size_t ngetline = 0;
+    size_t ngetline;
 
-    int nchars = 0;
+    int nchars;
 
     while ((nchars = (int)getline(&line, &ngetline, stdin)) > 0) {
         if (line[nchars - 1] == '\n') line[--nchars] = 0;
